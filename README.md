@@ -264,12 +264,15 @@
 	1. link:https://github.com/Aspsine/MultiThreadDownload
 	2. link:https://github.com/AigeStudio/MultiThreadDownloader
 	
+######修复
+    修复MultiThreadDownload中下载中没有提供Content-Length的请求
 	
 ######贡献
     如果你想贡献代码，你可以通过GitHub的分叉的仓库和发送pull请求。
 	
 ######联系作者
 	Github: https://github.com/zdl411437734
+	oschina:http://git.oschina.net/jason/AndroidDemoModel
 	邮箱：411437734@qq.com
 
 ######许可证

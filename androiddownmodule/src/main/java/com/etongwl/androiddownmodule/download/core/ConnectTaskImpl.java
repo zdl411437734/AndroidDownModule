@@ -109,8 +109,8 @@ public class ConnectTaskImpl implements ConnectTask {
         } else {
             length = Long.parseLong(contentLength);
         }
-
-        if (length <= 0) {
+        // if (length <= 0) {//原来逻辑
+        if (length <= 0&&isAcceptRanges) {//支持断点下载且文件长度小于0 抛出异常
             throw new DownloadException(DownloadStatus.STATUS_FAILED, "length <= 0");
         }
 

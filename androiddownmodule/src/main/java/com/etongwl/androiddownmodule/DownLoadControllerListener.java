@@ -2,6 +2,7 @@ package com.etongwl.androiddownmodule;
 
 import com.etongwl.androiddownmodule.download.CallBack;
 import com.etongwl.androiddownmodule.download.DownloadException;
+import com.etongwl.androiddownmodule.download.listener.DownloadStatus;
 
 import java.io.File;
 

@@ -58,17 +58,6 @@ public class Utils {
         }
     }
 
-    /**
-     * 获取下载文件文件夹
-     * @param context
-     * @return
-     */
-    public static final File getDownloadDir(Context context) {
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            return new File(context.getExternalCacheDir(), DOWNLOAD_DIR);
-        }
-        return new File(context.getCacheDir(), DOWNLOAD_DIR);
-    }
 
     /**
      * 获取文件前缀(-文件名称)
@@ -180,6 +169,11 @@ public class Utils {
         return true;
     }
 
+    /**
+     * 获取默认下载路径
+     * @param context
+     * @return
+     */
     public static final File getDefaultDownloadDir(Context context) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             return new File(context.getExternalCacheDir(), DOWNLOAD_DIR);
