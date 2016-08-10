@@ -13,12 +13,10 @@
 	4. 数据库使用
 	5. 文件完整性校验
 	6. 下载完成清空数据库
-	7. service使用--还在完善中...
+	7. service使用
 	8. 通知栏使用
 	9. 不支持多线程下载的-自动单线程下载
-	10. SD卡管理--还在完善中
-	11. 自动更新提示框
-	12. 下载完成提示框
+	10. SD卡管理--还在思考完善中(敬请期待)
 	
 ######使用指南
 	兼容的版本：android4.0以上
@@ -99,7 +97,7 @@
             
             //cancel all
             DownloadManager.getInstance().cancelAll();
-        5. 推荐使用DownLoadController类
+        5. 推荐使用DownLoadController类(不需要设置第3步)
            5.1. 封装了单例DownLoadController.getInstance(context);//推荐使用Application的Context
            5.2. 默认下载配置
             private void initDownloader(Context mContext) {
@@ -119,6 +117,144 @@
             Utils.fileVerifyByMd5方法比较,或者调用Utils.getMd5ByFile方法获取文件md5,自己处理比较
         7. 通知栏使用
             使用NotificationManager类管理通知栏,用户也可以根据自己需求定义通知栏,或者重写本包中NotificationManager部分方法.
+        8. service使用
+           8.1 注册和取消注册
+               private void register() {
+                       mReceiver = new DownloadReceiver();
+                       IntentFilter intentFilter = new IntentFilter();
+                       intentFilter.addAction(DownloadService.ACTION_DOWNLOAD_BROAD_CAST);
+                       LocalBroadcastManager.getInstance(getContext()).registerReceiver(mReceiver, intentFilter);
+                   }
+                   
+                private void unRegister() {
+                     if (mReceiver != null) {
+                         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mReceiver);
+                     }
+                 }
+           8.2 写广播接收器
+              class DownloadReceiver extends BroadcastReceiver {
+              
+                      @Override
+                      public void onReceive(Context context, Intent intent) {
+                          final String action = intent.getAction();
+                          if (action == null || !action.equals(DownloadService.ACTION_DOWNLOAD_BROAD_CAST)) {
+                              return;
+                          }
+                          final int position = intent.getIntExtra(DownloadService.EXTRA_POSITION, -1);
+                          final AppInfo tmpInfo = (AppInfo) intent.getSerializableExtra(DownloadService.EXTRA_APP_INFO);
+                          if (tmpInfo == null || position == -1) {
+                              return;
+                          }
+                          final AppInfo appInfo = mAppInfos.get(position);
+                          final int status = tmpInfo.getStatus();
+                          switch (status) {
+                              case AppInfo.STATUS_CONNECTING:
+                                  appInfo.setStatus(AppInfo.STATUS_CONNECTING);
+                                  if (isCurrentListViewItemVisible(position)) {
+                                      ListViewAdapter.ViewHolder holder = getViewHolder(position);
+                                      holder.tvStatus.setText(appInfo.getStatusText());
+                                      holder.btnDownload.setText(appInfo.getButtonText());
+                                  }
+                                  break;
+              
+                              case AppInfo.STATUS_DOWNLOADING:
+                                  appInfo.setStatus(AppInfo.STATUS_DOWNLOADING);
+                                  appInfo.setProgress(tmpInfo.getProgress());
+                                  appInfo.setDownloadPerSize(tmpInfo.getDownloadPerSize());
+                                  if (isCurrentListViewItemVisible(position)) {
+                                      ListViewAdapter.ViewHolder holder = getViewHolder(position);
+                                      holder.tvDownloadPerSize.setText(appInfo.getDownloadPerSize());
+                                      holder.progressBar.setProgress(appInfo.getProgress());
+                                      holder.tvStatus.setText(appInfo.getStatusText());
+                                      holder.btnDownload.setText(appInfo.getButtonText());
+                                  }
+                                  break;
+                              case AppInfo.STATUS_COMPLETE:
+                                  appInfo.setStatus(AppInfo.STATUS_COMPLETE);
+                                  appInfo.setProgress(tmpInfo.getProgress());
+                                  appInfo.setDownloadPerSize(tmpInfo.getDownloadPerSize());
+                                  File apk = new File(mDownloadDir, appInfo.getName() + ".apk");
+                                  if (apk.isFile() && apk.exists()) {
+                                      String packageName = Utils.getApkFilePackage(getActivity(), apk);
+                                      appInfo.setPackageName(packageName);
+                                      if (Utils.isAppInstalled(getActivity(), packageName)) {
+                                          appInfo.setStatus(AppInfo.STATUS_INSTALLED);
+                                      }
+                                  }
+              
+                                  if (isCurrentListViewItemVisible(position)) {
+                                      ListViewAdapter.ViewHolder holder = getViewHolder(position);
+                                      holder.tvStatus.setText(appInfo.getStatusText());
+                                      holder.btnDownload.setText(appInfo.getButtonText());
+                                      holder.tvDownloadPerSize.setText(appInfo.getDownloadPerSize());
+                                      holder.progressBar.setProgress(appInfo.getProgress());
+                                  }
+                                  break;
+              
+                              case AppInfo.STATUS_PAUSED:
+                                  appInfo.setStatus(AppInfo.STATUS_PAUSED);
+                                  if (isCurrentListViewItemVisible(position)) {
+                                      ListViewAdapter.ViewHolder holder = getViewHolder(position);
+                                      holder.tvStatus.setText(appInfo.getStatusText());
+                                      holder.btnDownload.setText(appInfo.getButtonText());
+                                  }
+                                  break;
+                              case AppInfo.STATUS_NOT_DOWNLOAD:
+                                  appInfo.setStatus(AppInfo.STATUS_NOT_DOWNLOAD);
+                                  appInfo.setProgress(tmpInfo.getProgress());
+                                  appInfo.setDownloadPerSize(tmpInfo.getDownloadPerSize());
+                                  if (isCurrentListViewItemVisible(position)) {
+                                      ListViewAdapter.ViewHolder holder = getViewHolder(position);
+                                      holder.tvStatus.setText(appInfo.getStatusText());
+                                      holder.btnDownload.setText(appInfo.getButtonText());
+                                      holder.progressBar.setProgress(appInfo.getProgress());
+                                      holder.tvDownloadPerSize.setText(appInfo.getDownloadPerSize());
+                                  }
+                                  break;
+                              case AppInfo.STATUS_DOWNLOAD_ERROR:
+                                  appInfo.setStatus(AppInfo.STATUS_DOWNLOAD_ERROR);
+                                  appInfo.setDownloadPerSize("");
+                                  if (isCurrentListViewItemVisible(position)) {
+                                      ListViewAdapter.ViewHolder holder = getViewHolder(position);
+                                      holder.tvStatus.setText(appInfo.getStatusText());
+                                      holder.tvDownloadPerSize.setText("");
+                                      holder.btnDownload.setText(appInfo.getButtonText());
+                                  }
+                                  break;
+                          }
+                      }
+                  }
+                  
+              8.3 使用
+                   private void download(int position, String tag, AppInfo info) {
+                          DownloadService.intentDownload(getActivity(), position, tag, info);
+                      }
+                  
+                      private void pause(String tag) {
+                          DownloadService.intentPause(getActivity(), tag);
+                      }
+                  
+                      private void pauseAll() {
+                          DownloadService.intentPauseAll(getActivity());
+                      }
+                  
+                      private void install(AppInfo appInfo) {
+                          Utils.installApp(getActivity(), new File(mDownloadDir, appInfo.getName() + ".apk"));
+                      }
+                  
+                      private void unInstall(AppInfo appInfo) {
+                          Utils.unInstallApp(getActivity(), appInfo.getPackageName());
+                      }
+             9. DownloadServiceControler使用
+                9.1.  DownloadServiceControler支持自定义监听DownLoadControllerListener,如果用户不自定义默认使用的是广播接收仅仅发送接收状态,
+                推荐大家自己实现DownLoadControllerListener监听
+                9.2.  默认使用系统发送广播为ACTION_DOWNLOAD_BROAD_CAST参数为 intent.putExtra(EXTRA_STATUS, status)状态,用户自己写广播接收器完成状态监听.
+                9.3.  状态枚举
+                    public enum ServiceDownStatus {
+                        STATUS_STARTED, STATUS_CONNECTING, STATUS_CONNECTED, STATUS_PROGRESS,
+                        STATUS_PAUSED, STATUS_CANCEL, STATUS_COMPLETE, STATUS_FAILED
+                    }
+                
         
         
 		
