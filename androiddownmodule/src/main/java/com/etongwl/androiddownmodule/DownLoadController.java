@@ -34,8 +34,8 @@ public class DownLoadController {
      * @param mContext 建议传递Application的Context
      * @return
      */
-    public DownLoadController getInstance(Context mContext) {
-        this.mContext = mContext;
+    public static DownLoadController getInstance(Context mContext) {
+        DownLoadController.mContext = mContext;
         return LazyHolder.INSTANCE;
     }
 

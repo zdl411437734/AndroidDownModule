@@ -24,7 +24,9 @@ public class DownloadResponseImpl implements DownloadResponse {
     @Override
     public void onStarted() {
         mDownloadStatus.setStatus(DownloadStatus.STATUS_STARTED);
-        mDownloadStatus.getCallBack().onStarted();
+        if (mDownloadStatus.getCallBack()!=null){
+            mDownloadStatus.getCallBack().onStarted();
+        }
     }
 
     @Override

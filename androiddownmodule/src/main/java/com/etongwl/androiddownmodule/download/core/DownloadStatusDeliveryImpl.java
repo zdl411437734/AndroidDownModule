@@ -43,25 +43,39 @@ public class DownloadStatusDeliveryImpl implements DownloadStatusDelivery {
         public void run() {
             switch (mDownloadStatus.getStatus()) {
                 case DownloadStatus.STATUS_CONNECTING:
-                    mCallBack.onConnecting();
+                    if (mCallBack!=null){
+                        mCallBack.onConnecting();
+                    }
                     break;
                 case DownloadStatus.STATUS_CONNECTED:
-                    mCallBack.onConnected(mDownloadStatus.getLength(), mDownloadStatus.isAcceptRanges());
+                    if (mCallBack!=null){
+                        mCallBack.onConnected(mDownloadStatus.getLength(), mDownloadStatus.isAcceptRanges());
+                    }
                     break;
                 case DownloadStatus.STATUS_PROGRESS:
-                    mCallBack.onProgress(mDownloadStatus.getFinished(), mDownloadStatus.getLength(), mDownloadStatus.getPercent());
+                    if (mCallBack!=null){
+                        mCallBack.onProgress(mDownloadStatus.getFinished(), mDownloadStatus.getLength(), mDownloadStatus.getPercent());
+                    }
                     break;
                 case DownloadStatus.STATUS_COMPLETED:
-                    mCallBack.onCompleted();
+                    if (mCallBack!=null){
+                        mCallBack.onCompleted();
+                    }
                     break;
                 case DownloadStatus.STATUS_PAUSED:
-                    mCallBack.onDownloadPaused();
+                    if (mCallBack!=null){
+                        mCallBack.onDownloadPaused();
+                    }
                     break;
                 case DownloadStatus.STATUS_CANCELED:
-                    mCallBack.onDownloadCanceled();
+                    if (mCallBack!=null){
+                        mCallBack.onDownloadCanceled();
+                    }
                     break;
                 case DownloadStatus.STATUS_FAILED:
-                    mCallBack.onFailed((DownloadException) mDownloadStatus.getException());
+                    if (mCallBack!=null){
+                        mCallBack.onFailed((DownloadException) mDownloadStatus.getException());
+                    }
                     break;
             }
         }
